@@ -40,7 +40,7 @@ const GETTERS = {
   postgresql: require("./lastupdate/postgresql"),
 };
 
-// The END upstreams, not to include trailing slashes
+/** The END upstreams, not to include trailing slashes */
 const UPSTREAMS = {
   archlinux: "https://mirror.pkgbuild.com",
   archlinuxcn: "https://repo.archlinuxcn.org",
@@ -72,23 +72,35 @@ const { url, token, org, bucket } = require("./env");
 
 const writeApi = new InfluxDB({ url, token }).getWriteApi(org, bucket, "ns");
 
+/** Make sure a failure on a distro doesn't affect monitoring other distros */
+async function getLastUpdated(name, baseUrl) {
+  try {
+    return await GETTERS[name](baseUrl);
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
+
 async function main() {
   const resp = await fetch(`${SITE}/static/status.json`);
   const status = await resp.json();
   for (const distro of status) {
     const lastUpdated =
       distro.name in GETTERS
-        ? await GETTERS[distro.name](`${SITE}/${distro.name}`)
+        ? await getLastUpdated(distro.name, `${SITE}/${distro.name}`)
         : distro.last_update_ts;
     const upstreamUpdated =
       distro.name in GETTERS && distro.name in UPSTREAMS
-        ? await GETTERS[distro.name](`${UPSTREAMS[distro.name]}`)
+        ? await getLastUpdated(distro.name, UPSTREAMS[distro.name])
         : Math.round(Date.now() / 1000);
-    const p = new Point("delay")
-      .timestamp(new Date())
-      .tag("name", distro.name)
-      .intField("value", upstreamUpdated - lastUpdated);
-    writeApi.writePoint(p);
+    if (lastUpdated && upstreamUpdated) {
+      const p = new Point("delay")
+        .timestamp(new Date())
+        .tag("name", distro.name)
+        .intField("value", upstreamUpdated - lastUpdated);
+      writeApi.writePoint(p);
+    }
   }
   writeApi
     .close()
