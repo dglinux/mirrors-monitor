@@ -1,27 +1,10 @@
-# Monitor
+# Mirrors Monitor
 
-Code of MirrorZ monitor.
+Monitor data generator for DGLinux mirrors. Gets delay time (in seconds) by comparing timestamps between upstreams and local and stores it in influxdb each run. You should run it with a timer job, i.e. cronie or systemd-timer.
 
-Use [https://mirrorz.org/monitor](https://mirrorz.org/monitor) to view one instance of such monitor.
+Use influxdb 2.x. Set these environment variables: `INFLUX_URL`, `INFLUX_TOKEN`, `INFLUX_ORG`, `INFLUX_BUCKET`.
 
-## main.js
+## Credit
 
-Use `node main.js` to insert data into one influxdb 2.x
+Forked from [MirrorZ monitor](https://github.com/mirrorz-org/mirrorz-monitor).
 
-You may configure those secrets in `env.js`
-
-`parser` directory is from `mirrorz-org/mirrorz-parser`.
-
-```
-git clone git@github.com:mirrorz-org/mirrorz-parser.git parser
-```
-
-## influxdb
-
-Use influxdb 2.x. Make sure you have a bucket named `mirrorz`.
-
-## grafana
-
-Grafana uses influxdb as data source. You may import `grafana.json` as a new dashboard.
-
-Note: queries are saved in the json, if you do not find them after importing, manually import them.
