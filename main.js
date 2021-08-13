@@ -42,6 +42,8 @@ const GETTERS = {
   mariadb: require("./lastupdate/mariadb"),
   msys2: require("./lastupdate/msys2"),
   postgresql: require("./lastupdate/postgresql"),
+  ubuntu: require("./lastupdate/ubuntu"),
+  "ubuntu-releases": require("./lastupdate/ubuntu-releases"),
 };
 
 /** The END upstreams, not to include trailing slashes */
